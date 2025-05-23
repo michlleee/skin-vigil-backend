@@ -1,9 +1,13 @@
 numpy
 pandas
+flask
+flask-cors
+tensorflow
 matplotlib
 seaborn
 pillow
 scikit-learn
 keras
-tensorflow
+pillow
+numpy
 gunicorn
