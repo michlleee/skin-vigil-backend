@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://skin-vigil-frontend.vercel.app/"])
 
 def build(input_shape=(224, 224, 3), lr=1e-3, num_classes=2,
           init='normal', activ='relu', optim='adam'):
@@ -30,7 +30,11 @@ model = build()
 model.load_weights('model.h5')
 
 # ===== Predict API =====
-@app.route('/DetectUpload', methods=['POST'])
+@app.route("/")
+def home():
+    return "SkinVigil backend is running."
+
+@app.route('/api/predict', methods=['POST'])
 def detect_upload():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -65,5 +69,6 @@ def detect_upload():
         return jsonify({'error': str(e)}), 500
 
 # ===== Run Flask App =====
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', debug=True, port=port)
