@@ -2,7 +2,7 @@ numpy
 pandas
 flask
 flask-cors
-tensorflow
+tensorflow-cpu
 matplotlib
 seaborn
 pillow

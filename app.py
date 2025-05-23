@@ -7,6 +7,11 @@ from tensorflow.keras.optimizers import Adam, RMSprop
 from PIL import Image
 import numpy as np
 
+import tensorflow as tf
+
+# Ensure TensorFlow uses CPU instead of GPU
+tf.config.set_visible_devices([], 'GPU')
+
 app = Flask(__name__)
 CORS(app, origins=["https://skin-vigil-frontend.vercel.app/"])
 
