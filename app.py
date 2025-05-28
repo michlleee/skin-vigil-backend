@@ -11,7 +11,7 @@ import os
 tf.config.set_visible_devices([], 'GPU')
 
 app = Flask(__name__)
-CORS(app, origins=["https://skin-vigil-frontend.vercel.app/"])
+CORS(app, origins=["https://skin-vigil-frontend.vercel.app"], supports_credentials=True)
 
 model = None
 
@@ -72,6 +72,40 @@ def detect_upload():
         })
 
     except Exception as e:
+        return jsonify({'error': str(e)}), 500@app.route('/api/detect_upload', methods=['POST'])
+def detect_upload():
+    global model
+    print("➡️ Received prediction request")
+
+    if model is None:
+        try:
+            model = build()
+            model.load_weights('model.h5')
+            print("✅ Model loaded.")
+        except Exception as e:
+            print(f"❌ Model loading error: {e}")
+            return jsonify({'error': f'Model failed to load: {e}'}), 500
+
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+
+        file = request.files['file']
+        img = Image.open(file.stream).convert('RGB').resize((224, 224))
+        img = np.array(img) / 255.0
+        img = np.expand_dims(img, axis=0)
+
+        prediction = model.predict(img)[0]
+        cls = np.argmax(prediction)
+        confidence = float(prediction[cls])
+        result = "Cancer Detected" if confidence >= 0.64 else "No Cancer"
+
+        return jsonify({
+            'prediction': result,
+            'confidence': confidence
+        })
+    except Exception as e:
+        print(f"❌ Prediction error: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
