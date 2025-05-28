@@ -8,18 +8,17 @@ from PIL import Image
 import numpy as np
 import os
 
-# Force TensorFlow to use CPU only
 tf.config.set_visible_devices([], 'GPU')
 
 app = Flask(__name__)
 CORS(app, origins=["https://skin-vigil-frontend.vercel.app/"])
 
-model = None  # Will be initialized later
+model = None
 
 def build(input_shape=(224, 224, 3), lr=1e-3, num_classes=2,
           init='normal', activ='relu', optim='adam'):
     model = Sequential([
-        tf.keras.Input(shape=input_shape),  # ✅ Preferred over input_shape in Conv2D
+        tf.keras.Input(shape=input_shape),
         Conv2D(64, (3, 3), padding='same', activation=activ, kernel_initializer='glorot_uniform'),
         MaxPool2D((2, 2)), Dropout(0.25),
         Conv2D(64, (3, 3), padding='same', activation=activ, kernel_initializer='glorot_uniform'),
@@ -32,29 +31,22 @@ def build(input_shape=(224, 224, 3), lr=1e-3, num_classes=2,
     model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"])
     return model
 
-# Load model only once when the app receives its first request
-# @app.before_first_request
-# def load_model():
-#     global model
-#     model = build()
-#     model.load_weights('model.h5')
-
-print("Initializing app...")
-
-try:
-    model = build()
-    model.load_weights('model.h5')
-    print("Model loaded successfully.")
-except Exception as e:
-    print("Failed to load model:", e)
-
-
 @app.route("/")
 def home():
     return "SkinVigil backend is running."
 
 @app.route('/api/detect_upload', methods=['POST'])
 def detect_upload():
+    global model
+    if model is None:
+        try:
+            print("Building and loading model on first request...")
+            model = build()
+            model.load_weights('model.h5')
+            print("Model loaded.")
+        except Exception as e:
+            return jsonify({'error': f'Failed to load model: {e}'}), 500
+
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
