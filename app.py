@@ -14,7 +14,7 @@ tf.config.set_visible_devices([], 'GPU')
 app = Flask(__name__)
 CORS(app, origins=["https://skin-vigil-frontend.vercel.app/"])
 
-# model = None  # Will be initialized later
+model = None  # Will be initialized later
 
 def build(input_shape=(224, 224, 3), lr=1e-3, num_classes=2,
           init='normal', activ='relu', optim='adam'):
