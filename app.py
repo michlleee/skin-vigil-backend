@@ -33,11 +33,21 @@ def build(input_shape=(224, 224, 3), lr=1e-3, num_classes=2,
     return model
 
 # Load model only once when the app receives its first request
-@app.before_first_request
-def load_model():
-    global model
+# @app.before_first_request
+# def load_model():
+#     global model
+#     model = build()
+#     model.load_weights('model.h5')
+
+print("Initializing app...")
+
+try:
     model = build()
     model.load_weights('model.h5')
+    print("Model loaded successfully.")
+except Exception as e:
+    print("Failed to load model:", e)
+
 
 @app.route("/")
 def home():
